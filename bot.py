@@ -1,28 +1,29 @@
+import os
+import telebot
+from openai import OpenAI
+
+# 1. ОПРЕДЕЛЯЕМ bot ПЕРВЫМ
+bot = telebot.TeleBot(os.environ["BOT_TOKEN"])
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+print("🚀 GPT Бот запущен!")
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, "🤖 GPT-бот готов!\nНапиши 'анекдот' или вопрос!")
+
 @bot.message_handler(func=lambda message: True)
-def smart_reply(message):
-    print(f"📨 Сообщение: {message.text}")  # В логи Railway
-    
-    # Проверка ключей
-    openai_key = os.environ.get("OPENAI_API_KEY")
-    if not openai_key:
-        bot.reply_to(message, "❌ OPENAI_API_KEY не задан!")
-        return
-    
+def gpt_reply(message):
+    print(f"Сообщение: {message.text}")  # В логи
     try:
-        import openai
-        print("✅ openai импортирована")
-        
-        client = OpenAI(api_key=openai_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": message.text}]
         )
         answer = response.choices[0].message.content
-        bot.reply_to(message, answer)
-        print("✅ GPT ответил")
-        
-    except ImportError:
-        bot.reply_to(message, "❌ Нет библиотеки openai (проверь requirements.txt)")
+        bot.reply_to(message, answer[:1000])  # Макс 1000 символов
     except Exception as e:
-        bot.reply_to(message, f"❌ GPT ошибка: {str(e)}")
-        print(f"❌ Ошибка: {e}")
+        print(f"Ошибка: {e}")
+        bot.reply_to(message, f"GPT ошибка: {str(e)}")
+
+bot.polling(none_stop=True)
