@@ -1,0 +1,11 @@
+[project]
+name = "telegram-gpt-bot"
+version = "1.0.0"
+dependencies = [
+  "pyTelegramBotAPI==4.22.1",
+  "openai==1.51.2"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
